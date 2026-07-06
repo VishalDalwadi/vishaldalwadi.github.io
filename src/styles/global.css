@@ -1,0 +1,39 @@
+@import './tokens.css';
+
+/* Self-hosted (see /public/fonts) rather than the external Excalidraw CDN,
+   so the site has no runtime dependency on a third party. Confirm Excalifont's
+   license permits this before shipping publicly. */
+@font-face {
+  font-family: 'Excalifont';
+  src: url('/fonts/Excalifont-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--pp-font);
+  color: var(--pp-ink);
+  background: var(--pp-bg-canvas);
+}
+
+a {
+  color: inherit;
+}
+
+img,
+svg {
+  max-width: 100%;
+}

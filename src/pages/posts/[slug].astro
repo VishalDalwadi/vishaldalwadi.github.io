@@ -1,0 +1,83 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { data } = post;
+
+const scenePath = path.join(process.cwd(), 'src/data/scenes', `${post.id}.svg`);
+const sceneSvg = fs.readFileSync(scenePath, 'utf-8');
+---
+
+<BaseLayout
+  title={`${data.title} — paperplanes.cloud`}
+  description={data.seoDescription}
+  articleMeta={{ datePublished: new Date(data.date).toISOString(), section: data.category }}
+>
+  <main class="page">
+    <h1 class="sr-only">{data.title}</h1>
+    <div class="scene-wrap">
+      <div class="scene" set:html={sceneSvg} />
+      {data.links.map((link) => (
+        <a
+          class="hotspot"
+          href={link.href}
+          style={`left:${link.left}%; top:${link.top}%; width:${link.width}%; height:${link.height}%;`}
+          aria-label={link.href === '/' ? 'back to notebook' : 'read post'}
+        />
+      ))}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .page {
+    min-height: 100vh;
+    background-color: var(--pp-bg-article);
+    background-image: var(--pp-dots-22);
+    background-size: 22px 22px;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .scene-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+  }
+  .scene :global(svg) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .hotspot {
+    position: absolute;
+    display: block;
+  }
+  .hotspot:hover {
+    outline: 2px dashed var(--pp-accent);
+    outline-offset: 2px;
+  }
+</style>
