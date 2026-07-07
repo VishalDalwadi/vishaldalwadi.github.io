@@ -1,20 +1,4 @@
 {
   "title": "paperplanes.cloud",
-  "seoDescription": "a notebook about things that fly, roll, or launch.",
-  "links": [
-    {
-      "href": "/posts/example-slug/",
-      "left": 1.7804154302670623,
-      "top": 52.22222222222223,
-      "width": 32.640949554896146,
-      "height": 44.44444444444444
-    },
-    {
-      "href": "/",
-      "left": 1.7804154302670623,
-      "top": 2.2222222222222223,
-      "width": 28.18991097922849,
-      "height": 11.11111111111111
-    }
-  ]
+  "seoDescription": "a notebook about things that fly, roll, or launch."
 }

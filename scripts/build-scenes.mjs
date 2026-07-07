@@ -12,9 +12,9 @@
 //     that can't themselves be a drawing. Its contents are excluded from the
 //     rendered SVG (it's bookkeeping, not art).
 //   - any frame named "link:home" or "link:post/<slug>" — whatever is drawn
-//     inside becomes a clickable hotspot over that region, pointing at the
-//     given page. The frame can wrap any artwork (an arrow, a logo, a whole
-//     card doodle) — only its position matters.
+//     inside becomes a clickable link to the given page, wrapped natively in
+//     the rendered SVG (an <a> around that frame's elements plus a
+//     transparent hit-area rect sized to their bounds).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -80,24 +80,18 @@ function convertScene(slug, scene) {
     (el) => el.type !== 'frame' && !el.isDeleted && !(el.frameId && excludeFrameIds.has(el.frameId))
   );
 
-  const rendered = sceneToSvg(renderable);
-  if (!rendered) throw new Error(`[${slug}] scene has no drawable content outside the "meta" frame`);
-
   const links = linkFrames
     .map((frame) => {
       const href = resolveHref(frame.name, slug);
       if (!href) return null;
-      return {
-        href,
-        left: ((frame.x - rendered.minX + rendered.padding) / rendered.width) * 100,
-        top: ((frame.y - rendered.minY + rendered.padding) / rendered.height) * 100,
-        width: (frame.width / rendered.width) * 100,
-        height: (frame.height / rendered.height) * 100,
-      };
+      return { id: frame.id, href, ariaLabel: href === '/' ? 'back to notebook' : 'read post' };
     })
     .filter(Boolean);
 
-  return { meta, svg: rendered.svg, links };
+  const rendered = sceneToSvg(renderable, { links });
+  if (!rendered) throw new Error(`[${slug}] scene has no drawable content outside the "meta" frame`);
+
+  return { meta, svg: rendered.svg };
 }
 
 function buildHomepage() {
@@ -107,12 +101,12 @@ function buildHomepage() {
   }
 
   const scene = JSON.parse(fs.readFileSync(homepageScenePath, 'utf-8'));
-  const { meta, svg, links } = convertScene('homepage', scene);
+  const { meta, svg } = convertScene('homepage', scene);
 
   fs.writeFileSync(path.join(scenesOutDir, 'homepage.svg'), svg);
   fs.writeFileSync(
     homepageOutFile,
-    JSON.stringify({ title: meta.title, seoDescription: meta.seo, links }, null, 2) + '\n'
+    JSON.stringify({ title: meta.title, seoDescription: meta.seo }, null, 2) + '\n'
   );
   console.log('built scene: homepage');
 }
@@ -133,7 +127,7 @@ function buildPosts() {
     const slug = path.basename(file, '.excalidraw');
     const scene = JSON.parse(fs.readFileSync(path.join(postScenesDir, file), 'utf-8'));
 
-    const { meta, svg, links } = convertScene(slug, scene);
+    const { meta, svg } = convertScene(slug, scene);
     for (const field of ['date', 'category', 'readTime']) {
       if (!meta[field]) throw new Error(`[${slug}] "meta" frame is missing a "${field}:" line`);
     }
@@ -148,7 +142,6 @@ function buildPosts() {
           category: meta.category,
           readTime: meta.readTime,
           seoDescription: meta.seo,
-          links,
         },
         null,
         2

@@ -13,7 +13,6 @@ const homepage = hasHomepageScene
   : {
       title: 'paperplanes.cloud — a notebook about things that fly, roll, or launch',
       seoDescription: 'A notebook about planes, space, rockets, physics, cars, and trains — things that fly, roll, or launch.',
-      links: [],
     };
 
 const sceneSvg = hasHomepageScene ? fs.readFileSync(sceneSvgPath, 'utf-8') : null;
@@ -24,13 +23,6 @@ const sceneSvg = hasHomepageScene ? fs.readFileSync(sceneSvgPath, 'utf-8') : nul
     {sceneSvg ? (
       <div class="scene-wrap">
         <div class="scene" set:html={sceneSvg} />
-        {homepage.links.map((link: { href: string; left: number; top: number; width: number; height: number }) => (
-          <a
-            class="hotspot"
-            href={link.href}
-            style={`left:${link.left}%; top:${link.top}%; width:${link.width}%; height:${link.height}%;`}
-          />
-        ))}
       </div>
     ) : (
       <p class="empty-note">
@@ -61,13 +53,8 @@ const sceneSvg = hasHomepageScene ? fs.readFileSync(sceneSvgPath, 'utf-8') : nul
     height: auto;
     display: block;
   }
-  .hotspot {
-    position: absolute;
-    display: block;
-  }
-  .hotspot:hover {
-    outline: 2px dashed var(--pp-accent);
-    outline-offset: 2px;
+  .scene :global(a.link-hotspot) {
+    cursor: pointer;
   }
   .empty-note {
     font-family: var(--pp-font);

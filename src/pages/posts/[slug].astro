@@ -32,14 +32,6 @@ const sceneSvg = fs.readFileSync(scenePath, 'utf-8');
     <h1 class="sr-only">{data.title}</h1>
     <div class="scene-wrap">
       <div class="scene" set:html={sceneSvg} />
-      {data.links.map((link) => (
-        <a
-          class="hotspot"
-          href={link.href}
-          style={`left:${link.left}%; top:${link.top}%; width:${link.width}%; height:${link.height}%;`}
-          aria-label={link.href === '/' ? 'back to notebook' : 'read post'}
-        />
-      ))}
     </div>
   </main>
 </BaseLayout>
@@ -72,12 +64,7 @@ const sceneSvg = fs.readFileSync(scenePath, 'utf-8');
     height: auto;
     display: block;
   }
-  .hotspot {
-    position: absolute;
-    display: block;
-  }
-  .hotspot:hover {
-    outline: 2px dashed var(--pp-accent);
-    outline-offset: 2px;
+  .scene :global(a.link-hotspot) {
+    cursor: pointer;
   }
 </style>

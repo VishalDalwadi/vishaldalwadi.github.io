@@ -7,7 +7,7 @@
 // clean-line inline SVG. The whole scene is rendered as drawn — this is not
 // a content-extraction step, just a faithful re-render of the artwork.
 
-function bbox(elements) {
+export function bbox(elements) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
   for (const el of elements) {
@@ -102,7 +102,7 @@ function renderText(el) {
   return `<text x="${anchorX}" y="${el.y}" font-family="Excalifont, cursive" font-size="${fontSize}" fill="${el.strokeColor}" text-anchor="${anchor}"${rotateAttr(el)}>${tspans}</text>`;
 }
 
-const RENDERERS = {
+export const RENDERERS = {
   rectangle: renderRectangle,
   ellipse: renderEllipse,
   diamond: renderDiamond,
@@ -114,12 +114,12 @@ const RENDERERS = {
 
 /**
  * Renders a full set of Excalidraw elements as a standalone, tightly-cropped
- * inline SVG, and returns the bounding-box math used to produce it — callers
- * (e.g. resolving "link:" frame hotspots into percentage-based overlays) need
- * the same minX/minY/padding shift to map frame geometry into the SVG's
- * coordinate space.
+ * inline SVG. Elements belonging to a frame listed in `links` are wrapped in
+ * a native SVG `<a>` with a transparent hit-area rect sized to that frame's
+ * content — the clickable region is expressed in the same coordinate space
+ * as the artwork itself, so it can never drift out of alignment with it.
  */
-export function sceneToSvg(elements, { padding = 12 } = {}) {
+export function sceneToSvg(elements, { padding = 12, links = [] } = {}) {
   const renderable = elements.filter((el) => RENDERERS[el.type] && !el.isDeleted);
   if (renderable.length === 0) return null;
 
@@ -128,7 +128,47 @@ export function sceneToSvg(elements, { padding = 12 } = {}) {
   const height = maxY - minY + padding * 2;
 
   const shifted = renderable.map((el) => ({ ...el, x: el.x - minX + padding, y: el.y - minY + padding }));
-  const body = shifted.map((el) => RENDERERS[el.type](el)).join('\n  ');
+
+  const linksById = new Map(links.map((link) => [link.id, link]));
+  const frameBoxes = new Map();
+  for (const link of links) {
+    const els = shifted.filter((el) => el.frameId === link.id);
+    if (els.length > 0) frameBoxes.set(link.id, bbox(els));
+  }
+
+  // Walk elements in their original document order — stacking (what's drawn
+  // on top of what) depends on that order, so grouping link-frame content
+  // separately from everything else would silently reorder the two.
+  const emittedHitArea = new Set();
+  const parts = [];
+  for (let i = 0; i < shifted.length; ) {
+    const link = linksById.get(shifted[i].frameId);
+    if (!link) {
+      parts.push(RENDERERS[shifted[i].type](shifted[i]));
+      i += 1;
+      continue;
+    }
+
+    const run = [];
+    while (i < shifted.length && shifted[i].frameId === link.id) {
+      run.push(shifted[i]);
+      i += 1;
+    }
+
+    const box = frameBoxes.get(link.id);
+    let hit = '';
+    if (box && !emittedHitArea.has(link.id)) {
+      // Painted last (on top of the artwork) so its hover stroke is actually
+      // visible — fill stays transparent, so this never obscures anything.
+      hit = `\n    <rect x="${box.minX}" y="${box.minY}" width="${box.maxX - box.minX}" height="${box.maxY - box.minY}" fill="transparent" class="hit-area"/>`;
+      emittedHitArea.add(link.id);
+    }
+    const label = link.ariaLabel ? ` aria-label="${escapeXml(link.ariaLabel)}"` : '';
+    const runBody = run.map((el) => RENDERERS[el.type](el)).join('\n    ');
+    parts.push(`<a href="${escapeXml(link.href)}" class="link-hotspot"${label}>\n    ${runBody}${hit}\n  </a>`);
+  }
+
+  const body = parts.join('\n  ');
 
   const svg = `<svg width="100%" viewBox="0 0 ${width.toFixed(0)} ${height.toFixed(0)}" xmlns="http://www.w3.org/2000/svg">
   <defs>
