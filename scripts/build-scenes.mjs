@@ -3,9 +3,11 @@
 //
 // Excalidraw is the actual authoring surface here — whatever is drawn (text,
 // doodles, jokes, diagrams, headlines, anything) is rendered as-is to
-// src/data/scenes/<slug>.svg and embedded directly on the page. Nothing about
-// the drawing is parsed into paragraphs/fields; the only two things this
-// script looks for are:
+// src/data/scenes/<slug>.svg and embedded directly on the page, using the
+// real @excalidraw/excalidraw exporter (see lib/excalidraw-export) so the
+// output matches the app pixel-for-pixel — rough.js strokes, fonts, curved
+// arrows, opacity, all of it. Nothing about the drawing is parsed into
+// paragraphs/fields; the only things this script looks for are:
 //
 //   - a frame named "meta" containing a few "key: value" lines (title, date,
 //     category, readTime, seo) — plain facts a page needs for routing/SEO
@@ -15,11 +17,15 @@
 //     inside becomes a clickable link to the given page, wrapped natively in
 //     the rendered SVG (an <a> around that frame's elements plus a
 //     transparent hit-area rect sized to their bounds).
+//   - a frame named "canvas" — its bounds become the SVG's fixed viewBox, so
+//     the rendered scale of everything stays stable no matter what else gets
+//     added, moved, or removed elsewhere in the scene. This frame is
+//     required — it's also the artboard you should draw within.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sceneToSvg } from './lib/excalidraw-svg.mjs';
+import { createRenderer } from './lib/excalidraw-export/render.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const postScenesDir = path.join(rootDir, 'scenes/posts');
@@ -64,44 +70,83 @@ function resolveHref(frameName, slug) {
   return null;
 }
 
-function convertScene(slug, scene) {
+async function convertScene(slug, scene, renderer) {
   const elements = scene.elements ?? [];
   const allFrames = frames(elements);
 
   const metaFrames = allFrames.filter((f) => f.name === 'meta');
   const linkFrames = allFrames.filter((f) => f.name?.startsWith('link:'));
-  const excludeFrameIds = new Set(metaFrames.map((f) => f.id));
+  const canvasFrame = allFrames.find((f) => f.name === 'canvas');
+  if (!canvasFrame) {
+    throw new Error(`[${slug}] scene is missing a frame named "canvas" to define its export bounds`);
+  }
 
   const meta = parseMeta(metaFrames, elements);
   if (!meta.title) throw new Error(`[${slug}] "meta" frame is missing a "title:" line`);
   if (!meta.seo) throw new Error(`[${slug}] "meta" frame is missing a "seo:" line`);
 
-  const renderable = elements.filter(
-    (el) => el.type !== 'frame' && !el.isDeleted && !(el.frameId && excludeFrameIds.has(el.frameId))
+  const metaFrameIds = new Set(metaFrames.map((f) => f.id));
+  const contentElements = elements.filter(
+    (el) => el.type !== 'frame' && !el.isDeleted && !(el.frameId && metaFrameIds.has(el.frameId))
   );
 
-  const links = linkFrames
-    .map((frame) => {
-      const href = resolveHref(frame.name, slug);
-      if (!href) return null;
-      return { id: frame.id, href, ariaLabel: href === '/' ? 'back to notebook' : 'read post' };
-    })
-    .filter(Boolean);
+  const linksByFrameId = new Map();
+  for (const frame of linkFrames) {
+    const href = resolveHref(frame.name, slug);
+    if (!href) continue;
+    linksByFrameId.set(frame.id, { frame, href, ariaLabel: href === '/' ? 'back to notebook' : 'read post' });
+  }
 
-  const rendered = sceneToSvg(renderable, { links });
-  if (!rendered) throw new Error(`[${slug}] scene has no drawable content outside the "meta" frame`);
+  if (contentElements.length === 0) {
+    throw new Error(`[${slug}] scene has no drawable content outside the "meta" frame`);
+  }
 
-  return { meta, svg: rendered.svg };
+  // Split content into maximal consecutive runs by which link frame (if any)
+  // owns each element, preserving the scene's original document z-order —
+  // an element can stack on top of (or under) a link frame's content
+  // without belonging to that frame, so grouping "all main content, then
+  // all links" would silently invert that stacking.
+  const hitAreaEmitted = new Set();
+  const runs = [];
+  let currentOwnerId = undefined;
+  for (const el of contentElements) {
+    const link = linksByFrameId.get(el.frameId);
+    const ownerId = link ? link.frame.id : null;
+    if (currentOwnerId === ownerId && runs.length > 0) {
+      runs[runs.length - 1].elements.push(el);
+    } else {
+      runs.push({ ownerId, elements: [el] });
+      currentOwnerId = ownerId;
+    }
+  }
+
+  const resolvedRuns = runs.map(({ ownerId, elements: runElements }) => {
+    if (ownerId === null) return { kind: 'main', elements: runElements };
+    const link = linksByFrameId.get(ownerId);
+    const hitAreaEmitted_ = hitAreaEmitted.has(ownerId);
+    hitAreaEmitted.add(ownerId);
+    return {
+      kind: 'link',
+      frame: link.frame,
+      elements: runElements,
+      href: link.href,
+      ariaLabel: link.ariaLabel,
+      hitAreaEmitted: hitAreaEmitted_,
+    };
+  });
+
+  const svg = await renderer.render({ canvasFrame, runs: resolvedRuns });
+  return { meta, svg };
 }
 
-function buildHomepage() {
+async function buildHomepage(renderer) {
   if (!fs.existsSync(homepageScenePath)) {
     console.log('No scenes/homepage.excalidraw yet — skipping homepage build.');
     return;
   }
 
   const scene = JSON.parse(fs.readFileSync(homepageScenePath, 'utf-8'));
-  const { meta, svg } = convertScene('homepage', scene);
+  const { meta, svg } = await convertScene('homepage', scene, renderer);
 
   fs.writeFileSync(path.join(scenesOutDir, 'homepage.svg'), svg);
   fs.writeFileSync(
@@ -111,7 +156,7 @@ function buildHomepage() {
   console.log('built scene: homepage');
 }
 
-function buildPosts() {
+async function buildPosts(renderer) {
   if (!fs.existsSync(postScenesDir)) {
     console.log(`No ${path.relative(rootDir, postScenesDir)} directory yet — skipping post scenes.`);
     return;
@@ -127,7 +172,7 @@ function buildPosts() {
     const slug = path.basename(file, '.excalidraw');
     const scene = JSON.parse(fs.readFileSync(path.join(postScenesDir, file), 'utf-8'));
 
-    const { meta, svg } = convertScene(slug, scene);
+    const { meta, svg } = await convertScene(slug, scene, renderer);
     for (const field of ['date', 'category', 'readTime']) {
       if (!meta[field]) throw new Error(`[${slug}] "meta" frame is missing a "${field}:" line`);
     }
@@ -152,5 +197,10 @@ function buildPosts() {
   }
 }
 
-buildHomepage();
-buildPosts();
+const renderer = await createRenderer();
+try {
+  await buildHomepage(renderer);
+  await buildPosts(renderer);
+} finally {
+  await renderer.close();
+}
