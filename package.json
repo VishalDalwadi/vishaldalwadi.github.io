@@ -1,29 +1,28 @@
 {
-  "name": "paperplanes.cloud",
+  "name": "vishaldalwadi.github.io",
   "type": "module",
   "version": "0.0.1",
   "private": true,
   "engines": {
     "node": ">=22.12.0"
   },
+  "workspaces": [
+    "excalidraw-converter",
+    "excalidraw-rearrange"
+  ],
   "scripts": {
-    "scenes:build": "node scripts/build-scenes.mjs",
-    "new-post": "node scripts/new-post.mjs",
-    "prebuild": "npm run scenes:build",
-    "predev": "npm run scenes:build",
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "build": "tsx src/cli.ts build",
+    "dev": "tsx src/cli.ts dev",
+    "blog": "tsx src/cli.ts",
+    "new-post": "tsx src/cli.ts init",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.0.6"
+    "excalidraw-converter": "*"
   },
   "devDependencies": {
-    "@excalidraw/excalidraw": "^0.18.1",
-    "playwright": "^1.61.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.10"
   }
 }

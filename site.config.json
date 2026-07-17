@@ -1,0 +1,9 @@
+{
+  "title": "paperplanes.cloud",
+  "baseUrl": "https://paperplanes.cloud",
+  "description": "A notebook about planes, space, rockets, physics, cars, and trains — things that fly, roll, or launch.",
+  "nav": [
+    { "label": "Home", "href": "/" },
+    { "label": "Blog", "href": "/blog/" }
+  ]
+}
