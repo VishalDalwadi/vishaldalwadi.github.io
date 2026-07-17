@@ -1,0 +1,63 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "test-fixture",
+  "elements": [
+    {
+      "id": "frameCanvas",
+      "type": "frame",
+      "name": "canvas",
+      "x": 0,
+      "y": 0,
+      "width": 800,
+      "height": 400,
+      "angle": 0,
+      "isDeleted": false
+    },
+    {
+      "id": "frameMetadata",
+      "type": "frame",
+      "name": "metadata",
+      "x": -400,
+      "y": 0,
+      "width": 300,
+      "height": 200,
+      "angle": 0,
+      "isDeleted": false
+    },
+    {
+      "id": "textMetadata",
+      "type": "text",
+      "frameId": "frameMetadata",
+      "x": -380,
+      "y": 20,
+      "width": 260,
+      "height": 160,
+      "fontSize": 16,
+      "text": "{\"title\":\"Scale No Floor Test\",\"slug\":\"scale-no-floor-test\",\"custom\":{}}"
+    },
+    {
+      "id": "rectWide",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 0,
+      "y": 0,
+      "width": 600,
+      "height": 100
+    },
+    {
+      "id": "textWide",
+      "type": "text",
+      "frameId": "frameCanvas",
+      "x": 250,
+      "y": 30,
+      "width": 100,
+      "height": 50,
+      "fontSize": 40,
+      "containerId": "rectWide",
+      "text": "Big"
+    }
+  ],
+  "appState": {},
+  "files": {}
+}

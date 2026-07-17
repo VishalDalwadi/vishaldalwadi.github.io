@@ -1,0 +1,111 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "test-fixture",
+  "elements": [
+    {
+      "id": "frameCanvas",
+      "type": "frame",
+      "name": "canvas",
+      "x": 0,
+      "y": 0,
+      "width": 1400,
+      "height": 300,
+      "angle": 0,
+      "isDeleted": false
+    },
+    {
+      "id": "frameMetadata",
+      "type": "frame",
+      "name": "metadata",
+      "x": -400,
+      "y": 0,
+      "width": 300,
+      "height": 200,
+      "angle": 0,
+      "isDeleted": false
+    },
+    {
+      "id": "textMetadata",
+      "type": "text",
+      "frameId": "frameMetadata",
+      "x": -380,
+      "y": 20,
+      "width": 260,
+      "height": 160,
+      "fontSize": 16,
+      "text": "{\"title\":\"Three Column Test\",\"slug\":\"three-column-test\",\"custom\":{}}"
+    },
+    {
+      "id": "rectA1",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 10,
+      "y": 50,
+      "width": 100,
+      "height": 60
+    },
+    {
+      "id": "rectA2",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 300,
+      "y": 50,
+      "width": 100,
+      "height": 60
+    },
+    {
+      "id": "arrowA",
+      "type": "arrow",
+      "frameId": "frameCanvas",
+      "x": 110,
+      "y": 80,
+      "width": 190,
+      "height": 1,
+      "points": [[0, 0], [190, 0]],
+      "startBinding": { "elementId": "rectA1", "focus": 0, "gap": 4 },
+      "endBinding": { "elementId": "rectA2", "focus": 0, "gap": 4 }
+    },
+    {
+      "id": "rectB",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 500,
+      "y": 50,
+      "width": 150,
+      "height": 80
+    },
+    {
+      "id": "textB",
+      "type": "text",
+      "frameId": "frameCanvas",
+      "x": 520,
+      "y": 70,
+      "width": 110,
+      "height": 25,
+      "fontSize": 20,
+      "containerId": "rectB",
+      "text": "Label"
+    },
+    {
+      "id": "rectC1",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 900,
+      "y": 50,
+      "width": 80,
+      "height": 60
+    },
+    {
+      "id": "rectC2",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 990,
+      "y": 50,
+      "width": 80,
+      "height": 60
+    }
+  ],
+  "appState": {},
+  "files": {}
+}

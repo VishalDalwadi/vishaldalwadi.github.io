@@ -1,0 +1,39 @@
+{
+  "name": "excalidraw-rearrange",
+  "version": "0.1.0",
+  "description": "CLI + library that takes an existing .excalidraw file and produces a new canvas-{width} frame with content regrouped/stacked for a narrower target width.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "excalidraw-rearrange": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "excalidraw",
+    "responsive",
+    "cli"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "@types/node": "^22.0.0"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "test-fixture",
+  "elements": [
+    {
+      "id": "frameCanvas",
+      "type": "frame",
+      "name": "canvas",
+      "x": 0,
+      "y": 0,
+      "width": 800,
+      "height": 400,
+      "angle": 0,
+      "isDeleted": false
+    },
+    {
+      "id": "rect1",
+      "type": "rectangle",
+      "frameId": "frameCanvas",
+      "x": 20,
+      "y": 40,
+      "width": 120,
+      "height": 60
+    }
+  ],
+  "appState": {},
+  "files": {}
+}

@@ -1,0 +1,39 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "test-fixture",
+  "elements": [
+    {
+      "id": "frameMetadata",
+      "type": "frame",
+      "name": "metadata",
+      "x": -400,
+      "y": 0,
+      "width": 300,
+      "height": 200,
+      "angle": 0,
+      "isDeleted": false
+    },
+    {
+      "id": "textMetadata",
+      "type": "text",
+      "frameId": "frameMetadata",
+      "x": -380,
+      "y": 20,
+      "width": 260,
+      "height": 160,
+      "fontSize": 16,
+      "text": "{\"title\":\"No Canvas Test\",\"slug\":\"no-canvas-test\",\"custom\":{}}"
+    },
+    {
+      "id": "rect1",
+      "type": "rectangle",
+      "x": 20,
+      "y": 40,
+      "width": 120,
+      "height": 60
+    }
+  ],
+  "appState": {},
+  "files": {}
+}
