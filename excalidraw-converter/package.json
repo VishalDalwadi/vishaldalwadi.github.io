@@ -1,0 +1,53 @@
+{
+  "name": "excalidraw-converter",
+  "version": "0.1.0",
+  "description": "Converts .excalidraw files (following a metadata/canvas frame convention) into SVG + HTML output, one variant per canvas frame found.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "excalidraw-site": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --emitDeclarationOnly && node build.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "excalidraw",
+    "static-site",
+    "svg",
+    "converter"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "jsdom": "^25.0.1",
+    "path2d": "^0.3.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
