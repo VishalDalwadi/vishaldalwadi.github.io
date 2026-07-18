@@ -74,12 +74,18 @@ ${routes.map((r) => `  <url><loc>${new URL(r, site.baseUrl).toString()}</loc></u
 `;
   await writeFile(path.join(distDir, "sitemap.xml"), sitemap);
 
-  await cp(staticDir, path.join(distDir, "static"), { recursive: true });
+  // CNAME and robots.txt are GitHub-Pages-root files, not assets served from
+  // /static/ — exclude them from the wholesale copy so they only end up at
+  // the dist root (below), not duplicated under dist/static/ as dead files.
+  const rootOnlyFiles = new Set(["CNAME", "robots.txt"]);
+  await cp(staticDir, path.join(distDir, "static"), {
+    recursive: true,
+    filter: (source) => !rootOnlyFiles.has(path.relative(staticDir, source)),
+  });
   await mkdir(path.join(distDir, "static", "fonts"), { recursive: true });
   await cp(converterFontsDir, path.join(distDir, "static", "fonts"), { recursive: true });
 
-  // GitHub Pages requires these at the served root, not under /static/.
-  for (const rootFile of ["CNAME", "robots.txt"]) {
+  for (const rootFile of rootOnlyFiles) {
     const src = path.join(staticDir, rootFile);
     try {
       await cp(src, path.join(distDir, rootFile));
