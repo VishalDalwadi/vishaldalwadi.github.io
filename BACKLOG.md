@@ -5,14 +5,26 @@ roadmap — just a place to park things so they aren't lost.
 
 ## Layout
 
+### Hand-drawn site chrome (wordmark + back-link) instead of coded nav
+
+The wordmark and "back to notebook" link now live in a plain HTML/CSS
+`<header class="site-nav">` (`src/template.ts` / `static/site.css`), pinned
+to the viewport's actual edges — see the 2026-07-18 conversation. That was
+the pragmatic call: hand-drawing them would mean extending
+`excalidraw-converter`'s frame convention with a new "chrome" frame type
+that isn't scoped to any single canvas variant's fixed-pixel bounds, and is
+instead anchored to the viewport edge rather than the canvas's own edge —
+real engineering across the converter and build pipeline for what's
+currently just two small elements. Revisit if/when site chrome grows beyond
+"wordmark + one back-link" enough to justify it, or if keeping *everything*
+hand-drawn (no coded exceptions) becomes a firmer requirement.
+
 ### Let doodles bleed into the page margins (viewport centering)
 
-Right now `.page { display:flex; justify-content:center }` around
-`.page-wrap { max-width:900px }` centers every page's fixed-width canvas as
-a hard-edged block — on any viewport wider than ~940px this leaves large,
-totally empty margins on both sides (see the 2026-07-18 conversation: on
-`pages/home.excalidraw` specifically, the drawn content only fills ~400px of
-the declared 900px canvas width, compounding the effect).
+Right now `.page { display:flex; justify-content:center }` centers every
+page's fixed-width canvas as a hard-edged block — on any viewport wider than
+the canvas's own width (712px as of the 2026-07-18 conversation) this leaves
+large, totally empty margins on both sides.
 
 Idea: let some hand-drawn elements intentionally cross the canvas frame's
 own edge and render out into that margin area, so the page doesn't read as

@@ -76,9 +76,28 @@ body {
 }
 
 body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   font-family: var(--pp-font);
   color: var(--pp-ink);
   background: var(--pp-bg-canvas);
+}
+
+/* Theme (background) lives on body, not on .page/.blog-listing — the nav
+   header is a sibling of those, so putting the background here instead
+   means nav and content share one continuous surface with no visible seam
+   between them. */
+body.theme-home {
+  background-color: var(--pp-bg-corkboard);
+  background-image: var(--pp-dots-24);
+  background-size: 24px 24px;
+}
+
+body.theme-article {
+  background-color: var(--pp-bg-article);
+  background-image: var(--pp-dots-22);
+  background-size: 22px 22px;
 }
 
 a {
@@ -90,30 +109,52 @@ svg {
   max-width: 100%;
 }
 
+/* Site chrome — wordmark + back-link, pinned to the viewport's own edges.
+   Deliberately plain HTML/CSS rather than hand-drawn Excalidraw content: a
+   fixed-width canvas has no way to reach the true viewport edge. See
+   BACKLOG.md for the hand-drawn "chrome frame" alternative this skips. */
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 24px;
+}
+
+.site-nav-back {
+  font-family: var(--pp-font);
+  font-size: var(--pp-size-meta);
+  color: var(--pp-muted-65);
+  text-decoration: none;
+}
+
+.site-nav-back:hover {
+  color: var(--pp-ink);
+}
+
+.site-nav-mark {
+  line-height: 0;
+}
+
+.site-nav-mark img {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
 /* Page layout — wraps a single Excalidraw-drawn page (home or post) */
 .page {
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
   display: flex;
   justify-content: center;
   padding: 40px 20px;
-}
-
-.page--home {
-  background-color: var(--pp-bg-corkboard);
-  background-image: var(--pp-dots-24);
-  background-size: 24px 24px;
-}
-
-.page--article {
-  background-color: var(--pp-bg-article);
-  background-image: var(--pp-dots-22);
-  background-size: 22px 22px;
+  overflow-x: auto;
 }
 
 .page-wrap {
   position: relative;
-  width: 100%;
-  max-width: 900px;
+  flex-shrink: 0;
 }
 
 .sr-only {
@@ -126,11 +167,11 @@ svg {
 }
 
 /* Output of excalidraw-converter's convertPage() — see excalidraw-converter's
-   README for the exact markup shape (.excalidraw-page/-bg/-links-layer/-text-layer). */
-.excalidraw-page {
-  width: 100% !important;
-  max-width: 900px;
-}
+   README for the exact markup shape (.excalidraw-page/-bg/-links-layer/-text-layer).
+   Width comes from its own inline style (the variant's authored canvas width) —
+   no override here, so content renders at fixed size instead of scaling down
+   on narrower viewports; .page has overflow-x: auto for the case where the
+   viewport is narrower than the active variant. */
 
 .excalidraw-bg svg {
   width: 100%;
@@ -159,10 +200,8 @@ svg {
 
 /* Blog listing page — the one page in the site that isn't hand-drawn */
 .blog-listing {
-  min-height: 100vh;
-  background-color: var(--pp-bg-article);
-  background-image: var(--pp-dots-22);
-  background-size: 22px 22px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   justify-content: center;
   padding: 40px 20px;

@@ -102,6 +102,28 @@ export function renderVariants(variants: CanvasVariant[]): { bodyHtml: string; s
   return { bodyHtml, styleBlock: `<style>\n${rules.join("\n")}\n</style>` };
 }
 
+/**
+ * Site chrome (wordmark + back-to-notebook link) lives outside any
+ * Excalidraw canvas — it's pinned to the viewport's edges, which a
+ * fixed-width hand-drawn canvas has no way to reach. Plain HTML/CSS,
+ * not hand-drawn; see BACKLOG.md for the hand-drawn "chrome frame"
+ * alternative this deliberately skips for now.
+ */
+function renderSiteNav(isHome: boolean): string {
+  // Home: wordmark alone, sits at the left edge (justify-content:space-between
+  // puts a single child at flex-start). Everywhere else: back-link at the left
+  // edge, wordmark at the right — source order matters here since both are
+  // present and space-between places first-child/last-child at opposite ends.
+  const backLink = isHome
+    ? ""
+    : `<a class="site-nav-back" href="/">&larr; back to notebook</a>`;
+  const mark = `<a class="site-nav-mark" href="/"><img src="/static/logo-underline.svg" alt="paperplanes.cloud" width="260" height="44" /></a>`;
+
+  return `    <header class="site-nav">
+      ${isHome ? mark : `${backLink}\n      ${mark}`}
+    </header>`;
+}
+
 function renderAnalytics(): string {
   const gaId = process.env.PUBLIC_GA_ID;
   if (!gaId) return "";
@@ -181,7 +203,8 @@ export function renderPage(page: RoutedPage, site: SiteConfig): string {
   const title = custom.type === "post" ? `${result.metadata.title} — ${site.title}` : result.metadata.title;
   const description = custom.description ?? site.description;
 
-  const pageWrap = `    <main class="page ${custom.type === "home" ? "page--home" : "page--article"}">
+  const pageWrap = `${renderSiteNav(custom.type === "home")}
+    <main class="page">
       ${custom.type === "post" ? `<h1 class="sr-only">${escapeHtml(result.metadata.title)}</h1>\n      ` : ""}<div class="page-wrap">
         ${bodyHtml}
       </div>
@@ -193,7 +216,7 @@ export function renderPage(page: RoutedPage, site: SiteConfig): string {
     description,
     route,
     bodyHtml: pageWrap,
-    bodyClass: "",
+    bodyClass: custom.type === "home" ? "theme-home" : "theme-article",
     extraStyle: styleBlock ? `    ${styleBlock}\n` : undefined,
     articleMeta:
       custom.type === "post" && custom.date
@@ -214,7 +237,8 @@ export function renderBlogListing(posts: RoutedPage[], site: SiteConfig): string
     )
     .join("\n");
 
-  const bodyHtml = `    <main class="blog-listing">
+  const bodyHtml = `${renderSiteNav(false)}
+    <main class="blog-listing">
       <div class="blog-listing-wrap">
         <h1>Blog</h1>
         <ul class="blog-listing-entries">
@@ -229,6 +253,6 @@ ${entries || "          <li>No posts yet.</li>"}
     description: site.description,
     route: "/blog/",
     bodyHtml,
-    bodyClass: "",
+    bodyClass: "theme-article",
   });
 }
