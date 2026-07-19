@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { rearrangeToFile, RearrangeError } from "./index.js";
 import type { RearrangeReport } from "./types.js";
 
@@ -153,7 +154,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   }
 }
 
-const isMainModule = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+const isMainModule =
+  process.argv[1] && import.meta.url === `file://${realpathSync(process.argv[1])}`;
 if (isMainModule) {
   main();
 }

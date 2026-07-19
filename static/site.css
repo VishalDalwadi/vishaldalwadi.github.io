@@ -109,27 +109,15 @@ svg {
   max-width: 100%;
 }
 
-/* Site chrome — wordmark + back-link, pinned to the viewport's own edges.
-   Deliberately plain HTML/CSS rather than hand-drawn Excalidraw content: a
-   fixed-width canvas has no way to reach the true viewport edge. See
-   BACKLOG.md for the hand-drawn "chrome frame" alternative this skips. */
+/* Site chrome — wordmark, pinned to the viewport's own edges. Deliberately
+   plain HTML/CSS rather than hand-drawn Excalidraw content: a fixed-width
+   canvas has no way to reach the true viewport edge. See BACKLOG.md for the
+   hand-drawn "chrome frame" alternative this skips. */
 .site-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-shrink: 0;
   padding: 24px;
-}
-
-.site-nav-back {
-  font-family: var(--pp-font);
-  font-size: var(--pp-size-meta);
-  color: var(--pp-muted-65);
-  text-decoration: none;
-}
-
-.site-nav-back:hover {
-  color: var(--pp-ink);
 }
 
 .site-nav-mark {
