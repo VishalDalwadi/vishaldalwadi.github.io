@@ -52,14 +52,43 @@ Helvetica/Cascadia/Nunito/etc. fall back to system fonts. Fine while every
 real page uses fontFamily 5, but worth fixing if a post ever uses the code
 font family.
 
-### Exercise `excalidraw-rearrange` against real content
+### `excalidraw-rearrange` places new frames in the source canvas's x-range, leaking elements across variants
 
-Built and tested to spec, but no page in `pages/` actually has a
-`canvas-{width}` variant yet, so the responsive-switching path in
-`src/template.ts` (`renderVariants` with >1 variant) has only been
-exercised by synthetic tests, never a real multi-breakpoint post. Worth
-running the tool against a real post once one exists, to shake out anything
-the unit tests don't cover.
+Found running the tool against real content for the first time (home page +
+the free-spin post placeholder, 2026-07-19 conversation) — mobile content
+was clipping/overflowing on narrow viewports even after generating a
+`canvas-375` variant for both pages.
+
+Root cause: `excalidraw-converter`'s per-variant partition
+(`isWithinCanvasBounds` in `excalidraw-converter/src/frames.ts`) scopes
+elements to a variant purely by x-coordinate range (element center falls
+within `[canvasFrame.x, canvasFrame.x + canvasFrame.width]`) — it does not
+check y-range or frame membership. `excalidraw-rearrange` places its
+generated `canvas-{width}` frame at `originalCanvas.x` (see
+`excalidraw-rearrange/src/frames.ts:139`), i.e. directly below the source
+canvas but at the *same* x-origin. Since both frames start at x=0, any
+desktop element whose horizontal center happens to fall within the
+narrower target width (very likely for anything centered or left-aligned)
+gets silently pulled into the mobile variant too, rendered at a large
+negative `top` offset (the y-delta between the two frames) — invisible
+until it overflows or overlaps something.
+
+Worked around manually for the two existing pages by shifting the
+generated `canvas-375` frame (and its children) to a separate, clearly
+non-overlapping x-range (x=2000) after running the tool. That's a
+per-file, per-run manual step — worth fixing properly, either:
+
+- have `excalidraw-rearrange` place new frames in a non-overlapping
+  x-range by default (e.g. `originalCanvas.x + originalCanvas.width + gap`
+  instead of `originalCanvas.x`), or
+- make `excalidraw-converter`'s partition frame-membership-aware instead
+  of (or in addition to) x-range-based, so co-located frames on different
+  y-rows don't need artificial horizontal separation at all.
+
+Also worth adding a regression test in `excalidraw-rearrange` and/or
+`excalidraw-converter` covering this exact case (two frames sharing an
+x-origin, stacked vertically) now that it's a real observed failure, not
+just a hypothetical.
 
 ### Draft support
 
